@@ -4,11 +4,13 @@
   <title>TinyApp</title>
 </head>
 <body>
-    <h1>Urls!</h1>
+    <%- include('partials/_header') %>
+    <h2>Urls!</h2>
     <ul>
       <% for(url in urls){ %>
         <li><%= url %> - <%= urls[url] %></li>
       <% } %>
     </ul>
+    <a href="/newlink" >Add new Link</a>
 </body>
 </html>
