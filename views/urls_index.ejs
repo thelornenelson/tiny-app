@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
   <title>TinyApp</title>
+  <% include partials/_style %>
 </head>
 <body>
     <% include partials/_header %>
-    <h2>Urls!</h2>
-    <ul>
-      <% for(url in urls){ %>
-        <li><%= url %> - <%= urls[url] %></li>
-      <% } %>
-    </ul>
-    <a href="/urls/new" >Add new Link</a>
+    <div class="main">
+      <h2>Urls!</h2>
+      <ul>
+        <% for(url in urls){ %>
+          <li><%= url %> - <%= urls[url] %></li>
+        <% } %>
+      </ul>
+      <a href="/urls/new" >Add new Link</a>
+    </div>
 </body>
 </html>

@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <title>TinyApp</title>
+  <% include partials/_style %>
 </head>
 <body>
   <% include partials/_header %>
-  <h2>A Url!</h2>
+  <p><%= shortURL %> redirects to <a href="<%= longURL %>"><%= longURL %></a>
 </body>
 </html>
