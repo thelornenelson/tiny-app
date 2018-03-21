@@ -7,15 +7,34 @@ const cookieParser = require('cookie-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
-let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-  "muFQNZ": "http://www.github.com",
-  "ry6Nfx": "http://www.cbc.ca"
+const users = {
+  "geg7aa": {
+    id: "geg7aa",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "vbei2j": {
+    id: "vbei2j",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
 };
 
-app.set("view engine", "ejs");
+const urlDatabase = {
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa"},
+  "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa"},
+  "muFQNZ": {longURL: "http://www.github.com", userId: "geg7aa"},
+  "ry6Nfx": {longURL: "http://www.cbc.ca", userId: "geg7aa"},
+  "D3pMhr": {longURL: "http://www.craigslist.org", userId: "vbei2j"},
+  "AkSRNi": {longURL: "http://http.cat", userId: "vbei2j"},
+  "6y25ws": {longURL: "https://nodemon.io/", userId: "vbei2j"},
+  "yKQrHo": {longURL: "http://www.usedvictoria.com", userId: "vbei2j"},
+  "gbxHsa": {longURL: "http://www.facebook.com", userId: "vbei2j"},
+  "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j"},
+};
 
+
+app.set("view engine", "ejs");
 
 // kinda useless
 app.get("/", (req, res) => {
@@ -23,15 +42,17 @@ app.get("/", (req, res) => {
 });
 
 // super basic API... client can just get the whole database.
+// should modify this so the user ids aren't included.
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
 // main page for URL app
 app.get("/urls", (req, res) => {
+  let userId = req.cookies["user_id"];
   let templateVars = {
-    username: req.cookies["username"],
-    urls: urlDatabase
+    user: getUserById(userId),
+    urls: userURLs(userId, urlDatabase)
   };
   res.render("urls_index", templateVars);
 });
@@ -39,7 +60,7 @@ app.get("/urls", (req, res) => {
 // form to create new short URL
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    user: getUserById(req.cookies["user_id"]),
     random: generateRandomString()
   };
   res.render("urls_new", templateVars);
@@ -48,9 +69,9 @@ app.get("/urls/new", (req, res) => {
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    user: getUserById(req.cookies["user_id"]),
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[req.params.id].longURL
   };
   res.render("urls_show", templateVars);
 });
@@ -64,15 +85,47 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(redirect);
 });
 
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.post("/register", (req, res) =>{
+  if(userExists(req.body.email)){
+    res.status(400).send('Bad Request (email already registered)');
+  } else if(!req.body.email || !req.body.password){
+    res.status(400).send('Bad Request (email or password empty)');
+  } else {
+    let newId = generateRandomString();
+    users[newId] = {
+      id: newId,
+      email: req.body.email,
+      password: req.body.password
+    };
+    res.cookie("user_id", newId);
+    res.redirect("/urls");
+  }
+});
+
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
-// login user username
+// login user if email and password match
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  for(user in users){
+    if(users[user].email === req.body.email){
+      if(users[user].password === req.body.password){
+        res.cookie("user_id", user);
+        res.redirect("/urls");
+      }
+    }
+  }
+  res.status(403).send('Access Denied, Email/Password Mismatch');
 });
 
 // create new database record
@@ -86,7 +139,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   //check to make sure id exists.
   if(urlDatabase[req.params.id]){
-    urlDatabase[req.params.id] = req.body.longURL;
+    urlDatabase[req.params.id].longURL = req.body.longURL;
   }
   res.redirect("/urls");
 });
@@ -105,6 +158,17 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+// returns new urls object, filtered by userId
+function userURLs(userId, urlDatabase){
+  let result = {};
+  for(shortURL in urlDatabase){
+    if(urlDatabase[shortURL].userId === userId){
+      result[shortURL] = urlDatabase[shortURL].longURL;
+    }
+  }
+  return result;
+}
+
 function generateRandomString(){
   let length = 6;
   let result = "";
@@ -115,4 +179,24 @@ function generateRandomString(){
   }
 
   return result;
+}
+
+// returns true if email found for existing user, otherwise false
+function userExists(email){
+  for(user in users){
+    if(users[user].email === email){
+      return true;
+    }
+  }
+  return false;
+
+}
+
+//returns refernce to user object if found, otherwise undefined.
+function getUserById(userId){
+  for(user in users){
+    if(users[user].id === userId){
+      return users[user];
+    }
+  }
 }

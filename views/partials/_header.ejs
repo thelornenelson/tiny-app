@@ -2,19 +2,14 @@
   <span class="header-title header-color header-shadow">TinyApp</span>
   <span class="header-subtext header-color header-shadow">a simple url shortener</span>
   <div class="nav-bar header-color">
-    <a class="header" href="/urls/new" >New Link</a> | <a class="header header-shadow" href="/urls" >My Links</a> |
-    <% if(username){ %>
-      <span>
-        <%= username %> is Logged In |
-      </span>
-      <form method="POST" action="/logout" >
+    <a class="header header-shadow" href="/urls/new" >New Link</a> |
+    <a class="header header-shadow" href="/urls" >My Links</a> <% if(user){ %>
+        <form method="POST" action="/logout" >
         <input type="submit" value="Log out">
       </form>
     <% } else { %>
-      <form method="POST" action="/login" >
-        <input type="text" placeholder="Enter Username..." name="username" />
-        <input type="submit" value="Login">
-      </form>
+      | <a class="header header-shadow" href="/register" >Register</a> |
+      <a class="header header-shadow" href="/login" >Login</a>
     <% } %>
   </div>
 </div>
