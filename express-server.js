@@ -8,10 +8,16 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
-  "muFQNZ": "http://www.github.com",
-  "ry6Nfx": "http://www.cbc.ca"
+  "user1" : {  "b2xVn2": "http://www.lighthouselabs.ca",
+     "9sm5xK": "http://www.google.com",
+     "muFQNZ": "http://www.github.com",
+     "ry6Nfx": "http://www.cbc.ca"},
+  "Andrew" : { "D3pMhr": "http://www.craigslist.org" ,
+    "AkSRNi": "http://http.cat",
+    "6y25ws": "https://nodemon.io/"},
+  "user3" : { "yKQrHo": "http://www.usedvictoria.com",
+    "gbxHsa": "http://www.facebook.com",
+    "RZbVdz": "http://www.youtube.com"}
 };
 
 app.set("view engine", "ejs");
