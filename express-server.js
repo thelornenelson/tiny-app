@@ -13,29 +13,51 @@ let urlDatabase = {
 
 app.set("view engine", "ejs");
 
+
+// kinda useless
 app.get("/", (req, res) => {
   res.end("Hello!");
 });
 
+// super basic API... client can just get the whole database.
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// main page for URL app
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+// form to create new short URL
 app.get("/urls/new", (req, res) => {
   res.render("urls_new", { random: generateRandomString() });
 })
 
+// show details for given short url, and show form to allow updating
+app.get("/urls/:id", (req, res) => {
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
+  res.render("urls_show", templateVars);
+});
+
+// redirect based on valid short URL, or just redirect to main page otherwise
+app.get("/u/:shortURL", (req, res) => {
+  let redirect = "/urls"; //default redirect to main page
+  if(urlDatabase[req.params.shortURL]){
+    redirect = urlDatabase[req.params.shortURL];
+  }
+  res.redirect(redirect);
+});
+
+// create new database record
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
   urlDatabase[newKey] = req.body.longURL;
-  res.redirect("/urls/" + newKey);
+  res.redirect("/urls");
 });
 
+// update existing database record, if it exists.
 app.post("/urls/:id", (req, res) => {
   //check to make sure id exists.
   if(urlDatabase[req.params.id]){
@@ -44,6 +66,7 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
+// delete record, if it exists
 app.post("/urls/:id/delete", (req, res) => {
   //check to make sure id exists.
   if(urlDatabase[req.params.id]){
@@ -52,15 +75,6 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
-  res.render("urls_show", templateVars);
-});
-
-app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

@@ -11,10 +11,12 @@
       <ul class="url-list">
         <% for(url in urls){ %>
           <li>
-            <%= url %> -> <a href="<%= urls[url] %>"><%= urls[url] %></a> 
-            <a href="../urls/<%= url %>">Edit</a>
+            <%= url %> -> <a href="<%= urls[url] %>"><%= urls[url] %></a>
+            <form method="GET" action="/urls/<%= url %>/">
+              <button  type="submit">Edit</button>
+            </form>
             <form method="POST" action="/urls/<%= url %>/delete">
-              <button type="submit">Delete</button>
+              <button  type="submit">Delete</button>
             </form>
           </li>
         <% } %>
