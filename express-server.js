@@ -29,18 +29,29 @@ app.get("/urls.json", (req, res) => {
 
 // main page for URL app
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
   res.render("urls_index", templateVars);
 });
 
 // form to create new short URL
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new", { random: generateRandomString() });
+  let templateVars = {
+    username: req.cookies["username"],
+    random: generateRandomString()
+  };
+  res.render("urls_new", templateVars);
 })
 
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id] };
+  let templateVars = {
+    username: req.cookies["username"],
+    shortURL: req.params.id,
+    longURL: urlDatabase[req.params.id]
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -51,6 +62,17 @@ app.get("/u/:shortURL", (req, res) => {
     redirect = urlDatabase[req.params.shortURL];
   }
   res.redirect(redirect);
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
+// login user username
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
 });
 
 // create new database record
