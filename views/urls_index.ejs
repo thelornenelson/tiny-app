@@ -11,7 +11,8 @@
       <ul class="url-list">
         <% for(url in urls){ %>
           <li>
-            <a href="../urls/<%= url %>"><%= url %></a> - <a href="<%= urls[url] %>"><%= urls[url] %></a>
+            <%= url %> -> <a href="<%= urls[url] %>"><%= urls[url] %></a> 
+            <a href="../urls/<%= url %>">Edit</a>
             <form method="POST" action="/urls/<%= url %>/delete">
               <button type="submit">Delete</button>
             </form>
