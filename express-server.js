@@ -35,9 +35,10 @@ app.get("/urls.json", (req, res) => {
 
 // main page for URL app
 app.get("/urls", (req, res) => {
+  let username = req.cookies["username"];
   let templateVars = {
-    username: req.cookies["username"],
-    urls: urlDatabase
+    username: username,
+    urls: urlDatabase[username]
   };
   res.render("urls_index", templateVars);
 });
@@ -53,10 +54,11 @@ app.get("/urls/new", (req, res) => {
 
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
+  let username = req.cookies["username"];
   let templateVars = {
-    username: req.cookies["username"],
+    username: username,
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[username][req.params.id]
   };
   res.render("urls_show", templateVars);
 });
@@ -64,8 +66,11 @@ app.get("/urls/:id", (req, res) => {
 // redirect based on valid short URL, or just redirect to main page otherwise
 app.get("/u/:shortURL", (req, res) => {
   let redirect = "/urls"; //default redirect to main page
-  if(urlDatabase[req.params.shortURL]){
-    redirect = urlDatabase[req.params.shortURL];
+  //iterate across all users to find if shortURL exists.
+  for(user in urlDatabase){
+    if(urlDatabase[user][req.params.shortURL]){
+      redirect = urlDatabase[user][req.params.shortURL];
+    }
   }
   res.redirect(redirect);
 });
@@ -84,24 +89,27 @@ app.post("/login", (req, res) => {
 // create new database record
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
-  urlDatabase[newKey] = req.body.longURL;
+  let username = req.cookies["username"];
+  urlDatabase[username][newKey] = req.body.longURL;
   res.redirect("/urls");
 });
 
 // update existing database record, if it exists.
 app.post("/urls/:id", (req, res) => {
   //check to make sure id exists.
-  if(urlDatabase[req.params.id]){
-    urlDatabase[req.params.id] = req.body.longURL;
+  let username = req.cookies["username"];
+  if(urlDatabase[username][req.params.id]){
+    urlDatabase[username][req.params.id] = req.body.longURL;
   }
   res.redirect("/urls");
 });
 
 // delete record, if it exists
 app.post("/urls/:id/delete", (req, res) => {
+  let username = req.cookies["username"];
   //check to make sure id exists.
-  if(urlDatabase[req.params.id]){
-    delete urlDatabase[req.params.id];
+  if(urlDatabase[username][req.params.id]){
+    delete urlDatabase[username][req.params.id];
   }
   res.redirect("/urls");
 });
