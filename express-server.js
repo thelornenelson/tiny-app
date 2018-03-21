@@ -6,7 +6,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "9sm5xK": "http://www.google.com",
+  "muFQNZ": "http://www.github.com",
+  "ry6Nfx": "http://www.cbc.ca"
 };
 
 app.set("view engine", "ejs");
@@ -31,8 +33,23 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
   urlDatabase[newKey] = req.body.longURL;
-  res.statusCode = 303;
-  res.redirect("http://localhost:8080/urls/" + newKey);
+  res.redirect("/urls/" + newKey);
+});
+
+app.post("/urls/:id", (req, res) => {
+  //check to make sure id exists.
+  if(urlDatabase[req.params.id]){
+    urlDatabase[req.params.id] = req.body.longURL;
+  }
+  res.redirect("/urls");
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  //check to make sure id exists.
+  if(urlDatabase[req.params.id]){
+    delete urlDatabase[req.params.id];
+  }
+  res.redirect("/urls");
 });
 
 app.get("/urls/:id", (req, res) => {

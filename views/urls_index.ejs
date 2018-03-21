@@ -10,7 +10,12 @@
       <h2>Here's everything in the database</h2>
       <ul class="url-list">
         <% for(url in urls){ %>
-          <li><a href="../urls/<%= url %>"><%= url %></a> - <a href="<%= urls[url] %>"><%= urls[url] %></a></li>
+          <li>
+            <a href="../urls/<%= url %>"><%= url %></a> - <a href="<%= urls[url] %>"><%= urls[url] %></a>
+            <form method="POST" action="/urls/<%= url %>/delete">
+              <button type="submit">Delete</button>
+            </form>
+          </li>
         <% } %>
       </ul>
     </div>
