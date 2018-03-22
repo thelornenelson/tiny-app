@@ -24,16 +24,16 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa"},
-  "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa"},
-  "muFQNZ": {longURL: "http://www.github.com", userId: "geg7aa"},
-  "ry6Nfx": {longURL: "http://www.cbc.ca", userId: "geg7aa"},
-  "D3pMhr": {longURL: "http://www.craigslist.org", userId: "vbei2j"},
-  "AkSRNi": {longURL: "http://http.cat", userId: "vbei2j"},
-  "6y25ws": {longURL: "https://nodemon.io/", userId: "vbei2j"},
-  "yKQrHo": {longURL: "http://www.usedvictoria.com", userId: "vbei2j"},
-  "gbxHsa": {longURL: "http://www.facebook.com", userId: "vbei2j"},
-  "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j"},
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa", date:  new Date(2018, 1, 5)},
+  "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa", date:  new Date(2018, 2, 5)},
+  "muFQNZ": {longURL: "http://www.github.com", userId: "geg7aa", date:  new Date(2017, 3, 15)},
+  "ry6Nfx": {longURL: "http://www.cbc.ca", userId: "geg7aa", date:  new Date(2014, 2, 20)},
+  "D3pMhr": {longURL: "http://www.craigslist.org", userId: "vbei2j", date:  new Date(2018, 3, 3)},
+  "AkSRNi": {longURL: "http://http.cat", userId: "vbei2j", date:  new Date(2018, 7, 8)},
+  "6y25ws": {longURL: "https://nodemon.io/", userId: "vbei2j", date:  new Date(2017, 1, 2)},
+  "yKQrHo": {longURL: "http://www.usedvictoria.com", userId: "vbei2j", date:  new Date(2018, 2, 3)},
+  "gbxHsa": {longURL: "http://www.facebook.com", userId: "vbei2j", date:  new Date(2018, 7, 7)},
+  "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j", date:  new Date(1987, 4, 11)},
 };
 
 
@@ -171,10 +171,9 @@ app.post("/login", (req, res) => {
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
   if(getUserById(req.session.userId)){ //confirm session is active and user exists
-    urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId };
+    urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId, date: new Date() };
   }
   res.redirect("/urls/" + newKey);
-
 });
 
 // update existing database record, if it exists.
@@ -210,7 +209,7 @@ function userURLs(userId, urlDatabase){
   let result = {};
   for(shortURL in urlDatabase){
     if(urlDatabase[shortURL].userId === userId){
-      result[shortURL] = urlDatabase[shortURL].longURL;
+      result[shortURL] = urlDatabase[shortURL];
     }
   }
   return result;

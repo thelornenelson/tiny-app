@@ -12,7 +12,7 @@
       <ul class="url-list">
         <% for(url in urls){ %>
           <li>
-            <%= url %> -> <a href="<%= urls[url] %>"><%= urls[url] %></a>
+            <%= url %> -> <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a> (<%= urls[url].date %>)
             <form method="GET" action="/urls/<%= url %>">
               <button  type="submit">Edit</button>
             </form>
