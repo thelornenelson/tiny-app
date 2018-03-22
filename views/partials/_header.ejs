@@ -4,6 +4,7 @@
   <div class="nav-bar header-color">
     <a class="header header-shadow" href="/urls/new" >New Link</a> |
     <a class="header header-shadow" href="/urls" >My Links</a> <% if(user){ %>
+        | Welcome Back, <%= user.email %> 
         <form method="POST" action="/logout" >
         <input type="submit" value="Log out">
       </form>

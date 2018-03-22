@@ -41,7 +41,12 @@ app.set("view engine", "ejs");
 
 // redirect root to /urls
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  if(req.session.userId){
+    res.redirect("/urls");
+  }
+  else {
+    res.redirect("/login");
+  }
 });
 
 // super basic API... client can just get the whole database.
@@ -75,25 +80,29 @@ app.get("/urls/new", (req, res) => {
 
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
-  if(req.session.userId === urlDatabase[req.params.id].userId){
+  if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){ //happy path, url exists for current user
     let templateVars = {
       user: getUserById(req.session.userId),
       shortURL: req.params.id,
       longURL: urlDatabase[req.params.id].longURL
     };
     res.render("urls_show", templateVars);
-  } else {
-    res.status(403).send(`You're not authorized to edit ${req.params.id}`);
-  }
+  } else if(req.session.userId && !urlDatabase[req.params.id]){ //logged in but URL doesn't exist
+      res.render("edit_errors", { message: `Url /${req.params.id} doesn't exist.`, user: getUserById(req.session.userId)});
+    } else if(req.session.userId){ //logged in
+        res.render("edit_errors", { message: `You're not authorized to edit ${req.params.id}`, user: getUserById(req.session.userId)});
+      } else { //not logged in
+        res.render("edit_errors", { message: "Not Logged In.", user: getUserById(req.session.userId)});
+      }
 });
 
 // redirect based on valid short URL, or just redirect to main page otherwise
 app.get("/u/:shortURL", (req, res) => {
-  let redirect = "/urls"; //default redirect to main page
   if(urlDatabase[req.params.shortURL]){
-    redirect = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
+  } else {
+    res.render("redirect_errors", { message: `I don't know where /${req.params.shortURL} is supposed to take you :(`, user: getUserById(req.session.userId)});
   }
-  res.redirect(redirect);
 });
 
 app.get("/register", (req, res) => {
@@ -151,6 +160,7 @@ app.post("/urls", (req, res) => {
 });
 
 // update existing database record, if it exists.
+// need to check if session is valid, otherwise any post request could add new urls
 app.post("/urls/:id", (req, res) => {
   //check to make sure id exists.
   if(urlDatabase[req.params.id]){
@@ -204,10 +214,17 @@ function userExists(email){
     }
   }
   return false;
-
 }
 
-//returns refernce to user object if found, otherwise undefined.
+// returns true if url found and userId matches
+function urlExistsForUser(userId, urlDatabase, shortURL){
+  if(urlDatabase[shortURL] && ( urlDatabase[shortURL].userId === userId )){
+    return true;
+  }
+  return false;
+}
+
+//returns reference to user object if found, otherwise undefined.
 function getUserById(userId){
   for(user in users){
     if(users[user].id === userId){

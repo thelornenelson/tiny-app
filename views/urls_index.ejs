@@ -7,12 +7,13 @@
 <body>
     <% include partials/_header %>
     <div class="main">
+      <% if(user) { %>
       <h2>Here's everything in the database</h2>
       <ul class="url-list">
         <% for(url in urls){ %>
           <li>
             <%= url %> -> <a href="<%= urls[url] %>"><%= urls[url] %></a>
-            <form method="GET" action="/urls/<%= url %>/">
+            <form method="GET" action="/urls/<%= url %>">
               <button  type="submit">Edit</button>
             </form>
             <form method="POST" action="/urls/<%= url %>/delete">
@@ -21,6 +22,12 @@
           </li>
         <% } %>
       </ul>
+      <p>
+        <a href="/urls/new">Add a Link</a>
+      </p>
+      <% } else { %>
+      <p><a href="/login">Login</a> to view your urls</p>
+      <% } %>
     </div>
 </body>
 </html>
