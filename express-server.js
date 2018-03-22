@@ -2,11 +2,11 @@ let express = require("express");
 let app = express();
 let PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({ name: "session", secret: "so be sure to add something" }));
 
 // obviously don't include passwords in comments like this in real life - these are
 // examples for testing.
@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
 
 // main page for URL app
 app.get("/urls", (req, res) => {
-  let userId = req.cookies["user_id"];
+  let userId = req.session.userId;
   let templateVars = {
     user: getUserById(userId),
     urls: userURLs(userId, urlDatabase)
@@ -62,11 +62,11 @@ app.get("/urls", (req, res) => {
 
 // form to create new short URL
 app.get("/urls/new", (req, res) => {
-  if(!req.cookies["user_id"]){
+  if(!req.session.userId){
     res.redirect("/login");
   } else {
     let templateVars = {
-      user: getUserById(req.cookies["user_id"]),
+      user: getUserById(req.session.userId),
       random: generateRandomString()
     };
     res.render("urls_new", templateVars);
@@ -75,9 +75,9 @@ app.get("/urls/new", (req, res) => {
 
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
-  if(req.cookies["user_id"] === urlDatabase[req.params.id].userId){
+  if(req.session.userId === urlDatabase[req.params.id].userId){
     let templateVars = {
-      user: getUserById(req.cookies["user_id"]),
+      user: getUserById(req.session.userId),
       shortURL: req.params.id,
       longURL: urlDatabase[req.params.id].longURL
     };
@@ -116,13 +116,13 @@ app.post("/register", (req, res) =>{
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 10)
     };
-    res.cookie("user_id", newId);
+    req.session.userId = newId;
     res.redirect("/urls");
   }
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -133,7 +133,7 @@ app.post("/login", (req, res) => {
     if(users[user].email === req.body.email){
       if(bcrypt.compareSync(req.body.password, users[user].password)){
         validUser = true;
-        res.cookie("user_id", user);
+        req.session.userId = user;
         res.redirect("/urls");
       }
     }
@@ -146,7 +146,7 @@ app.post("/login", (req, res) => {
 // create new database record
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
-  urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.cookies["user_id"]};
+  urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId};
   res.redirect("/urls");
 });
 
