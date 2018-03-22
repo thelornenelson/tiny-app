@@ -54,14 +54,12 @@ app.get("/urls", (req, res) => {
     user: getUserById(userId),
     urls: userURLs(userId, urlDatabase)
   };
-  console.log("urls for user " + userId + ": ");
   res.render("urls_index", templateVars);
 });
 
 // form to create new short URL
 app.get("/urls/new", (req, res) => {
   if(!req.cookies["user_id"]){
-    console.log(`req.cookies["user_id"] = ${req.cookies["user_id"]}, should redirect to /login`)
     res.redirect("/login");
   } else {
     let templateVars = {
@@ -74,12 +72,16 @@ app.get("/urls/new", (req, res) => {
 
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
-  let templateVars = {
-    user: getUserById(req.cookies["user_id"]),
-    shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL
-  };
-  res.render("urls_show", templateVars);
+  if(req.cookies["user_id"] === urlDatabase[req.params.id].userId){
+    let templateVars = {
+      user: getUserById(req.cookies["user_id"]),
+      shortURL: req.params.id,
+      longURL: urlDatabase[req.params.id].longURL
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    res.status(403).send(`You're not authorized to edit ${req.params.id}`);
+  }
 });
 
 // redirect based on valid short URL, or just redirect to main page otherwise
@@ -111,7 +113,6 @@ app.post("/register", (req, res) =>{
       email: req.body.email,
       password: req.body.password
     };
-    console.log(`Registered new user ${users[newId].email}, id ${newId}`)
     res.cookie("user_id", newId);
     res.redirect("/urls");
   }
