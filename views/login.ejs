@@ -7,6 +7,9 @@
   <body>
     <% include partials/_header %>
     <div class="main">
+      <% if(message){ %>
+      <p><%= message %></p>
+      <% } %>
     <form action="/login" method="POST" style="margin:150px;">
       <label for="email">Email:</label>
       <input id="email" type="text" name="email" placeholder="you@..." style="width: 300px">

@@ -67,14 +67,14 @@ app.get("/urls", (req, res) => {
 
 // form to create new short URL
 app.get("/urls/new", (req, res) => {
-  if(!req.session.userId){
-    res.redirect("/login");
-  } else {
+  if(req.session.userId){
     let templateVars = {
       user: getUserById(req.session.userId),
       random: generateRandomString()
     };
     res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
   }
 })
 
@@ -88,10 +88,13 @@ app.get("/urls/:id", (req, res) => {
     };
     res.render("urls_show", templateVars);
   } else if(req.session.userId && !urlDatabase[req.params.id]){ //logged in but URL doesn't exist
+      res.status(400);
       res.render("edit_errors", { message: `Url /${req.params.id} doesn't exist.`, user: getUserById(req.session.userId)});
     } else if(req.session.userId){ //logged in
-        res.render("edit_errors", { message: `You're not authorized to edit ${req.params.id}`, user: getUserById(req.session.userId)});
+        res.status(403);
+        res.render("edit_errors", { message: `You're not authorized to change ${req.params.id}`, user: getUserById(req.session.userId)});
       } else { //not logged in
+        res.status(401);
         res.render("edit_errors", { message: "Not Logged In.", user: getUserById(req.session.userId)});
       }
 });
@@ -101,24 +104,29 @@ app.get("/u/:shortURL", (req, res) => {
   if(urlDatabase[req.params.shortURL]){
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   } else {
+    res.status(400);
     res.render("redirect_errors", { message: `I don't know where /${req.params.shortURL} is supposed to take you :(`, user: getUserById(req.session.userId)});
   }
 });
 
 app.get("/register", (req, res) => {
-  res.render("register", { user: null });
+  if(req.session.userId){
+    res.redirect("/urls");
+  } else {
+      res.render("register", { user: null, message: null });
+    }
 });
 
 app.get("/login", (req, res) => {
-  res.render("login", { user: null });
+  if(req.session.userId){
+    res.redirect("/urls");
+  } else {
+      res.render("login", { user: null, message: null });
+    }
 });
 
 app.post("/register", (req, res) =>{
-  if(userExists(req.body.email)){
-    res.status(400).send('Bad Request (email already registered)');
-  } else if(!req.body.email || !req.body.password){
-    res.status(400).send('Bad Request (email or password empty)');
-  } else {
+  if(!userExists(req.body.email) && req.body.password && req.body.email){
     let newId = generateRandomString();
     users[newId] = {
       id: newId,
@@ -127,7 +135,13 @@ app.post("/register", (req, res) =>{
     };
     req.session.userId = newId;
     res.redirect("/urls");
-  }
+  } else if(userExists(req.body.email)){
+      res.status(400);
+      res.render("register", { user: null, message: "Bad Request (email already registered)"});
+    } else {
+      res.status(400);
+      res.render("register", { user: null, message: "Bad Request (email or password empty)"});
+      }
 });
 
 app.post("/logout", (req, res) => {
@@ -148,34 +162,42 @@ app.post("/login", (req, res) => {
     }
   }
   if(!validUser){
-    res.status(403).send('Access Denied, invalid email or password');
+    res.status(401);
+    res.render("login", { user: null, message: "Access Denied, invalid email or password"});
   }
 });
 
 // create new database record
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
-  urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId};
-  res.redirect("/urls");
+  if(getUserById(req.session.userId)){ //confirm session is active and user exists
+    urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId };
+  }
+  res.redirect("/urls/" + newKey);
+
 });
 
 // update existing database record, if it exists.
-// need to check if session is valid, otherwise any post request could add new urls
 app.post("/urls/:id", (req, res) => {
-  //check to make sure id exists.
-  if(urlDatabase[req.params.id]){
+  //check to make sure id exists and belongs to current session user
+  if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){
     urlDatabase[req.params.id].longURL = req.body.longURL;
+    res.redirect("/urls");
+  } else {
+    res.redirect("/urls/" + req.params.id);
   }
-  res.redirect("/urls");
+
 });
 
 // delete record, if it exists
 app.post("/urls/:id/delete", (req, res) => {
-  //check to make sure id exists.
-  if(urlDatabase[req.params.id]){
+  //check to make sure id exists and belongs to current session user
+  if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){
     delete urlDatabase[req.params.id];
+    res.redirect("/urls");
+  } else {
+    res.redirect("/urls/" + req.params.id);
   }
-  res.redirect("/urls");
 });
 
 
@@ -231,4 +253,5 @@ function getUserById(userId){
       return users[user];
     }
   }
+  return false;
 }
