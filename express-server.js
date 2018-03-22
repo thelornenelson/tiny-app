@@ -3,20 +3,23 @@ let app = express();
 let PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
+// obviously don't include passwords in comments like this in real life - these are
+// examples for testing.
 const users = {
   "geg7aa": {
     id: "geg7aa",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "$2a$10$ploTHotTOaWYZ4HFWJFjQOUNTjHTAJyt0NHsKzkUYkob5Lp3Otjkq" //purple-monkey-dinosaur
   },
  "vbei2j": {
     id: "vbei2j",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: "$2a$10$tOr2xR7yjaQ/3XL23.bdX.Q2M28YFoA2QXVDgW1RkL.Dr32qPhO2i" //dishwasher-funk
   }
 };
 
@@ -111,7 +114,7 @@ app.post("/register", (req, res) =>{
     users[newId] = {
       id: newId,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     };
     res.cookie("user_id", newId);
     res.redirect("/urls");
@@ -125,15 +128,19 @@ app.post("/logout", (req, res) => {
 
 // login user if email and password match
 app.post("/login", (req, res) => {
+  let validUser = false;
   for(user in users){
     if(users[user].email === req.body.email){
-      if(users[user].password === req.body.password){
+      if(bcrypt.compareSync(req.body.password, users[user].password)){
+        validUser = true;
         res.cookie("user_id", user);
         res.redirect("/urls");
       }
     }
   }
-  res.status(403).send('Access Denied, invalid email or password');
+  if(!validUser){
+    res.status(403).send('Access Denied, invalid email or password');
+  }
 });
 
 // create new database record
