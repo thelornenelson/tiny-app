@@ -36,16 +36,16 @@ const urlDatabase = {
 
 app.set("view engine", "ejs");
 
-// kinda useless
+// redirect root to /urls
 app.get("/", (req, res) => {
-  res.end("Hello!");
+  res.redirect("/urls");
 });
 
 // super basic API... client can just get the whole database.
 // should modify this so the user ids aren't included.
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get("/urls.json", (req, res) => {
+//   res.json(urlDatabase);
+// });
 
 // main page for URL app
 app.get("/urls", (req, res) => {
@@ -54,16 +54,22 @@ app.get("/urls", (req, res) => {
     user: getUserById(userId),
     urls: userURLs(userId, urlDatabase)
   };
+  console.log("urls for user " + userId + ": ");
   res.render("urls_index", templateVars);
 });
 
 // form to create new short URL
 app.get("/urls/new", (req, res) => {
-  let templateVars = {
-    user: getUserById(req.cookies["user_id"]),
-    random: generateRandomString()
-  };
-  res.render("urls_new", templateVars);
+  if(!req.cookies["user_id"]){
+    console.log(`req.cookies["user_id"] = ${req.cookies["user_id"]}, should redirect to /login`)
+    res.redirect("/login");
+  } else {
+    let templateVars = {
+      user: getUserById(req.cookies["user_id"]),
+      random: generateRandomString()
+    };
+    res.render("urls_new", templateVars);
+  }
 })
 
 // show details for given short url, and show form to allow updating
@@ -80,17 +86,17 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   let redirect = "/urls"; //default redirect to main page
   if(urlDatabase[req.params.shortURL]){
-    redirect = urlDatabase[req.params.shortURL];
+    redirect = urlDatabase[req.params.shortURL].longURL;
   }
   res.redirect(redirect);
 });
 
 app.get("/register", (req, res) => {
-  res.render("register");
+  res.render("register", { user: null });
 });
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  res.render("login", { user: null });
 });
 
 app.post("/register", (req, res) =>{
@@ -105,6 +111,7 @@ app.post("/register", (req, res) =>{
       email: req.body.email,
       password: req.body.password
     };
+    console.log(`Registered new user ${users[newId].email}, id ${newId}`)
     res.cookie("user_id", newId);
     res.redirect("/urls");
   }
@@ -125,13 +132,13 @@ app.post("/login", (req, res) => {
       }
     }
   }
-  res.status(403).send('Access Denied, Email/Password Mismatch');
+  res.status(403).send('Access Denied, invalid email or password');
 });
 
 // create new database record
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
-  urlDatabase[newKey] = req.body.longURL;
+  urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.cookies["user_id"]};
   res.redirect("/urls");
 });
 
