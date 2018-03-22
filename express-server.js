@@ -24,16 +24,16 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa", date:  new Date(2018, 1, 5)},
-  "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa", date:  new Date(2018, 2, 5)},
-  "muFQNZ": {longURL: "http://www.github.com", userId: "geg7aa", date:  new Date(2017, 3, 15)},
-  "ry6Nfx": {longURL: "http://www.cbc.ca", userId: "geg7aa", date:  new Date(2014, 2, 20)},
-  "D3pMhr": {longURL: "http://www.craigslist.org", userId: "vbei2j", date:  new Date(2018, 3, 3)},
-  "AkSRNi": {longURL: "http://http.cat", userId: "vbei2j", date:  new Date(2018, 7, 8)},
-  "6y25ws": {longURL: "https://nodemon.io/", userId: "vbei2j", date:  new Date(2017, 1, 2)},
-  "yKQrHo": {longURL: "http://www.usedvictoria.com", userId: "vbei2j", date:  new Date(2018, 2, 3)},
-  "gbxHsa": {longURL: "http://www.facebook.com", userId: "vbei2j", date:  new Date(2018, 7, 7)},
-  "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j", date:  new Date(1987, 4, 11)},
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa", date:  new Date(2018, 1, 5), redirects: 0},
+  "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa", date:  new Date(2018, 2, 5), redirects: 0},
+  "muFQNZ": {longURL: "http://www.github.com", userId: "geg7aa", date:  new Date(2017, 3, 15), redirects: 0},
+  "ry6Nfx": {longURL: "http://www.cbc.ca", userId: "geg7aa", date:  new Date(2014, 2, 20), redirects: 0},
+  "D3pMhr": {longURL: "http://www.craigslist.org", userId: "vbei2j", date:  new Date(2018, 3, 3), redirects: 0},
+  "AkSRNi": {longURL: "http://http.cat", userId: "vbei2j", date:  new Date(2018, 7, 8), redirects: 0},
+  "6y25ws": {longURL: "https://nodemon.io/", userId: "vbei2j", date:  new Date(2017, 1, 2), redirects: 0},
+  "yKQrHo": {longURL: "http://www.usedvictoria.com", userId: "vbei2j", date:  new Date(2018, 2, 3), redirects: 0},
+  "gbxHsa": {longURL: "http://www.facebook.com", userId: "vbei2j", date:  new Date(2018, 7, 7), redirects: 0},
+  "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j", date:  new Date(1987, 4, 11), redirects: 0},
 };
 
 
@@ -102,6 +102,7 @@ app.get("/urls/:id", (req, res) => {
 // redirect based on valid short URL, or just redirect to main page otherwise
 app.get("/u/:shortURL", (req, res) => {
   if(urlDatabase[req.params.shortURL]){
+    urlDatabase[req.params.shortURL].redirects++;
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   } else {
     res.status(400);
@@ -171,7 +172,7 @@ app.post("/login", (req, res) => {
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
   if(getUserById(req.session.userId)){ //confirm session is active and user exists
-    urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId, date: new Date() };
+    urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId, date: new Date(), redirects: 0};
   }
   res.redirect("/urls/" + newKey);
 });
