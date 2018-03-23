@@ -9,18 +9,16 @@ const dateFormat = require('dateFormat');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({ name: "session", secret: "so be sure to add something" }));
 
-// obviously don't include passwords in comments like this in real life - these are
-// examples for testing.
 const users = {
   "geg7aa": {
     id: "geg7aa",
     email: "user@example.com",
-    password: "$2a$10$ploTHotTOaWYZ4HFWJFjQOUNTjHTAJyt0NHsKzkUYkob5Lp3Otjkq" //purple-monkey-dinosaur
+    password: "$2a$10$ploTHotTOaWYZ4HFWJFjQOUNTjHTAJyt0NHsKzkUYkob5Lp3Otjkq"
   },
  "vbei2j": {
     id: "vbei2j",
     email: "user2@example.com",
-    password: "$2a$10$tOr2xR7yjaQ/3XL23.bdX.Q2M28YFoA2QXVDgW1RkL.Dr32qPhO2i" //dishwasher-funk
+    password: "$2a$10$tOr2xR7yjaQ/3XL23.bdX.Q2M28YFoA2QXVDgW1RkL.Dr32qPhO2i"
   }
 };
 
@@ -37,10 +35,9 @@ const urlDatabase = {
   "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j", date:  new Date(1987, 4, 11, 17, 0), redirects: 5, updated: false},
 };
 
-
 app.set("view engine", "ejs");
 
-// redirect root to /urls
+// redirect root to /urls, if logged in.
 app.get("/", (req, res) => {
   if(req.session.userId){
     res.redirect("/urls");
@@ -51,6 +48,7 @@ app.get("/", (req, res) => {
 });
 
 // main page for URL app
+// passing dateFormat so that EJS can access and format dates in template
 app.get("/urls", (req, res) => {
   let userId = req.session.userId;
   let templateVars = {
@@ -76,7 +74,8 @@ app.get("/urls/new", (req, res) => {
 
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
-  if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){ //happy path, url exists for current user
+  if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){
+    //happy path, url exists for current user
     let templateVars = {
       user: getUserById(req.session.userId),
       url: urlDatabase[req.params.id],
@@ -84,13 +83,16 @@ app.get("/urls/:id", (req, res) => {
       dateFormat: dateFormat
     };
     res.render("urls_show", templateVars);
-  } else if(req.session.userId && !urlDatabase[req.params.id]){ //logged in but URL doesn't exist
+  } else if(req.session.userId && !urlDatabase[req.params.id]){
+    //logged in but URL doesn't exist
       res.status(400);
       res.render("edit_errors", { message: `Url /${req.params.id} doesn't exist.`, user: getUserById(req.session.userId)});
-    } else if(req.session.userId){ //logged in
+    } else if(req.session.userId){
+      //logged in
         res.status(403);
         res.render("edit_errors", { message: `You're not authorized to change ${req.params.id}`, user: getUserById(req.session.userId)});
-      } else { //not logged in
+      } else {
+        //not logged in
         res.status(401);
         res.render("edit_errors", { message: "Not Logged In.", user: getUserById(req.session.userId)});
       }
@@ -169,7 +171,7 @@ app.post("/login", (req, res) => {
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
   if(getUserById(req.session.userId)){ //confirm session is active and user exists
-    urlDatabase[newKey] = { longURL: req.body.longURL, userId: req.session.userId, date: new Date(), redirects: 0};
+    urlDatabase[newKey] = { longURL: checkPrefix(req.body.longURL), userId: req.session.userId, date: new Date(), redirects: 0};
   }
   res.redirect("/urls/" + newKey);
 });
@@ -178,7 +180,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   //check to make sure id exists and belongs to current session user
   if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){
-    urlDatabase[req.params.id].longURL = req.body.longURL;
+    urlDatabase[req.params.id].longURL = checkPrefix(req.body.longURL);
     urlDatabase[req.params.id].date = new Date();
     urlDatabase[req.params.id].redirects = 0;
     urlDatabase[req.params.id].updated = true;
@@ -250,8 +252,18 @@ function urlExistsForUser(userId, urlDatabase, shortURL){
 function getUserById(userId){
   for(user in users){
     if(users[user].id === userId){
-      return users[user];
+      const foundUser = {id: users[user].id, email: users[user].email};
+      return foundUser;
     }
   }
   return false;
+}
+
+function checkPrefix(url){
+  if(!(/^\w+:\/\//.test(url))){
+    //test to see if url is prefixed with protocol in xyx:// format. If not, assume http://
+    return "http://" + url;
+  } else {
+    return url;
+  }
 }
