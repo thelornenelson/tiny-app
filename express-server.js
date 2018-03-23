@@ -3,9 +3,9 @@ let app = express();
 let PORT = process.env.PORT || 8080; // default port 8080
 
 const bodyParser = require("body-parser");
-const cookieSession = require('cookie-session');
-const bcrypt = require('bcrypt');
-const dateFormat = require('dateFormat');
+const cookieSession = require("cookie-session");
+const bcrypt = require("bcrypt");
+const dateFormat = require("dateFormat");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({ name: "session", secret: "so be sure to add something" }));
@@ -19,7 +19,7 @@ const users = {
     email: "user@example.com",
     password: "$2a$10$ploTHotTOaWYZ4HFWJFjQOUNTjHTAJyt0NHsKzkUYkob5Lp3Otjkq"
   },
- "vbei2j": {
+  "vbei2j": {
     id: "vbei2j",
     email: "user2@example.com",
     password: "$2a$10$tOr2xR7yjaQ/3XL23.bdX.Q2M28YFoA2QXVDgW1RkL.Dr32qPhO2i"
@@ -73,7 +73,7 @@ app.get("/urls/new", (req, res) => {
   } else {
     res.redirect("/login");
   }
-})
+});
 
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
@@ -117,8 +117,8 @@ app.get("/register", (req, res) => {
   if(req.session.userId){
     res.redirect("/urls");
   } else {
-      res.render("register", { user: null, message: null });
-    }
+    res.render("register", { user: null, message: null });
+  }
 });
 
 // display login form. Null user/message required to ensure templates are displayed appropriately
@@ -126,8 +126,8 @@ app.get("/login", (req, res) => {
   if(req.session.userId){
     res.redirect("/urls");
   } else {
-      res.render("login", { user: null, message: null });
-    }
+    res.render("login", { user: null, message: null });
+  }
 });
 
 // register new user if valid request, otherwise respond with error message
@@ -142,12 +142,12 @@ app.post("/register", (req, res) =>{
     req.session.userId = newId;
     res.redirect("/urls");
   } else if(userExists(req.body.email)){
-      res.status(400);
-      res.render("register", { user: null, message: "Bad Request (email already registered)"});
-    } else {
-      res.status(400);
-      res.render("register", { user: null, message: "Bad Request (email or password empty)"});
-      }
+    res.status(400);
+    res.render("register", { user: null, message: "Bad Request (email already registered)"});
+  } else {
+    res.status(400);
+    res.render("register", { user: null, message: "Bad Request (email or password empty)"});
+  }
 });
 
 // remove session cookie and redirect to main page
