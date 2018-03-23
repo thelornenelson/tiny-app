@@ -9,22 +9,37 @@
     <div class="main">
       <% if(user) { %>
       <h2>Here's all your URLs</h2>
-      <ul class="url-list">
+      <table class="url-list">
         <% for(url in urls){ %>
-          <li>
-            <%= url %> -> <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
-            (<% if(urls[url].updated){ %>Updated
-              <% } else { %>Created
-                <% } %> <% let dateString = dateFormat(urls[url].date, "mmm dd yyyy HH:MM"); %><%= dateString %>) - <%= urls[url].redirects %> visit<% if(urls[url].redirects === 1){ %><% } else { %>s<% } %>
-            <form method="GET" action="/urls/<%= url %>">
-              <button  type="submit">Edit</button>
-            </form>
-            <form method="POST" action="/urls/<%= url %>/delete">
-              <button  type="submit">Delete</button>
-            </form>
-          </li>
+            <tr>
+            <td class="left">
+              <a href="/u/<%= url %>">/u/<%= url %></a>
+            </td>
+            <td class="left">
+               ->
+            </td>
+            <td class="left">
+              <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
+            </td>
+            <td class="small">
+              (<% if(urls[url].updated){ %>Updated
+                <% } else { %>Created
+                <% } %> <% let dateString = dateFormat(urls[url].date, "mmm dd yyyy HH:MM"); %><%= dateString %>)
+            </td>
+            <td class="small">
+              <%= urls[url].redirects %> visit<% if(urls[url].redirects === 1){ %><% } else { %>s<% } %>
+            </td>
+            <td>
+              <form method="GET" action="/urls/<%= url %>">
+                <button  type="submit">Edit</button>
+              </form>
+              <form method="POST" action="/urls/<%= url %>/delete">
+                <button  type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
         <% } %>
-      </ul>
+      </table>
       <p>
         <a href="/urls/new">Add a Link</a>
       </p>

@@ -56,8 +56,28 @@ body {
 }
 
 .url-list {
-  list-style: none;
+  width: 90%;
+  margin: auto;
 }
+
+table {
+  border-collapse: collapse;
+  border-right: solid 1px #AEAEBB;
+  border-bottom: solid 1px #AEAEBB;
+}
+
+td {
+  padding: 3px 10px 3px 10px;
+  border: 0px;
+  margin: 0px;
+  text-align: center;
+}
+
+td.left {
+  text-align: left;
+}
+tr:nth-child(even) {background: #D1D1DF}
+tr:nth-child(odd) {background: #FFFFFF}
 
 .nav-bar {
   font-size: 15px;
@@ -77,8 +97,12 @@ body {
   border-radius: 7px 2px 2px 7px;
 }
 
+.small {
+  font-size: 0.75em;
+}
+
 h2 {
-  margin: 0px;
+  margin-top: 0px;
 }
 
 a:link {
