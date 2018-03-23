@@ -14,9 +14,9 @@ TinyApp is a full stack web application built with Nodejs and Express. It allows
 
 ## Final Product
 
-!["List of User's URLs"](https://github.com/thelornenelson/tiny-app/blob/master/docs/url-listing)
-!["URL Editing"](https://github.com/thelornenelson/tiny-app/blob/master/docs/url-edit)
-!["Example Error - trying to view details page for invalid URL"](https://github.com/thelornenelson/tiny-app/blob/master/docs/example-error)
+!["List of User's URLs"](https://github.com/thelornenelson/tiny-app/blob/master/docs/url-listing.png)
+!["URL Editing"](https://github.com/thelornenelson/tiny-app/blob/master/docs/url-edit.png)
+!["Example Error - trying to view details page for invalid URL"](https://github.com/thelornenelson/tiny-app/blob/master/docs/example-error.png)
 
 
 
