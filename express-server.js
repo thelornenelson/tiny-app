@@ -4,6 +4,7 @@ let PORT = process.env.PORT || 8080; // default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const dateFormat = require('dateFormat');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({ name: "session", secret: "so be sure to add something" }));
@@ -24,16 +25,16 @@ const users = {
 };
 
 const urlDatabase = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa", date:  new Date(2018, 1, 5), redirects: 0},
-  "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa", date:  new Date(2018, 2, 5), redirects: 0},
-  "muFQNZ": {longURL: "http://www.github.com", userId: "geg7aa", date:  new Date(2017, 3, 15), redirects: 0},
-  "ry6Nfx": {longURL: "http://www.cbc.ca", userId: "geg7aa", date:  new Date(2014, 2, 20), redirects: 0},
-  "D3pMhr": {longURL: "http://www.craigslist.org", userId: "vbei2j", date:  new Date(2018, 3, 3), redirects: 0},
-  "AkSRNi": {longURL: "http://http.cat", userId: "vbei2j", date:  new Date(2018, 7, 8), redirects: 0},
-  "6y25ws": {longURL: "https://nodemon.io/", userId: "vbei2j", date:  new Date(2017, 1, 2), redirects: 0},
-  "yKQrHo": {longURL: "http://www.usedvictoria.com", userId: "vbei2j", date:  new Date(2018, 2, 3), redirects: 0},
-  "gbxHsa": {longURL: "http://www.facebook.com", userId: "vbei2j", date:  new Date(2018, 7, 7), redirects: 0},
-  "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j", date:  new Date(1987, 4, 11), redirects: 0},
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa", date:  new Date(2018, 1, 5, 10, 5), redirects: 3, updated: true},
+  "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa", date:  new Date(2018, 2, 5, 18, 4), redirects: 5, updated: false},
+  "muFQNZ": {longURL: "http://www.github.com", userId: "geg7aa", date:  new Date(2017, 3, 15, 1, 2), redirects: 1, updated: false},
+  "ry6Nfx": {longURL: "http://www.cbc.ca", userId: "geg7aa", date:  new Date(2014, 2, 20, 23, 24), redirects: 0, updated: false},
+  "D3pMhr": {longURL: "http://www.craigslist.org", userId: "vbei2j", date:  new Date(2018, 3, 3, 5, 59), redirects: 1005, updated: false},
+  "AkSRNi": {longURL: "http://http.cat", userId: "vbei2j", date:  new Date(2018, 7, 8, 7, 11), redirects: 2, updated: false},
+  "6y25ws": {longURL: "https://nodemon.io/", userId: "vbei2j", date:  new Date(2017, 1, 2, 1, 23), redirects: 7, updated: false},
+  "yKQrHo": {longURL: "http://www.usedvictoria.com", userId: "vbei2j", date:  new Date(2018, 2, 3, 23, 23), redirects: 3, updated: true},
+  "gbxHsa": {longURL: "http://www.facebook.com", userId: "vbei2j", date:  new Date(2018, 7, 7, 14, 58), redirects: 4, updated: false},
+  "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j", date:  new Date(1987, 4, 11, 17, 0), redirects: 5, updated: false},
 };
 
 
@@ -49,18 +50,13 @@ app.get("/", (req, res) => {
   }
 });
 
-// super basic API... client can just get the whole database.
-// should modify this so the user ids aren't included.
-// app.get("/urls.json", (req, res) => {
-//   res.json(urlDatabase);
-// });
-
 // main page for URL app
 app.get("/urls", (req, res) => {
   let userId = req.session.userId;
   let templateVars = {
     user: getUserById(userId),
-    urls: userURLs(userId, urlDatabase)
+    urls: userURLs(userId, urlDatabase),
+    dateFormat: dateFormat
   };
   res.render("urls_index", templateVars);
 });
@@ -83,8 +79,9 @@ app.get("/urls/:id", (req, res) => {
   if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){ //happy path, url exists for current user
     let templateVars = {
       user: getUserById(req.session.userId),
+      url: urlDatabase[req.params.id],
       shortURL: req.params.id,
-      longURL: urlDatabase[req.params.id].longURL
+      dateFormat: dateFormat
     };
     res.render("urls_show", templateVars);
   } else if(req.session.userId && !urlDatabase[req.params.id]){ //logged in but URL doesn't exist
@@ -182,6 +179,9 @@ app.post("/urls/:id", (req, res) => {
   //check to make sure id exists and belongs to current session user
   if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){
     urlDatabase[req.params.id].longURL = req.body.longURL;
+    urlDatabase[req.params.id].date = new Date();
+    urlDatabase[req.params.id].redirects = 0;
+    urlDatabase[req.params.id].updated = true;
     res.redirect("/urls");
   } else {
     res.redirect("/urls/" + req.params.id);

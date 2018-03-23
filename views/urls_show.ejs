@@ -7,12 +7,16 @@
   <body>
     <% include partials/_header %>
     <div class="main">
-    <p>/u/<%= shortURL %> redirects to:</p>
+    <h1><a href="/u/<%= shortURL %>">/u/<%= shortURL %></a> redirects to:</h1>
     <form action="/urls/<%= shortURL %>" method="POST" style="margin:150px;">
       <label for="longURL">URL:</label>
-      <input id="longURL" type="text" name="longURL" value="<%= longURL %>" style="width: 300px">
+      <input id="longURL" type="text" name="longURL" value="<%= url.longURL %>" style="width: 300px">
       <input type="submit" value="Update">
     </form>
+    <p>This link was
+      <% if(url.updated){ %>updated
+        <% } else { %>created
+          <% } %> on <% let dateString = dateFormat(url.date, "mmm dd yyyy ' at ' HH:MM"); %><%= dateString %> and it's been visited <%= url.redirects %> time<% if(url.redirects === 1){ %><% } else { %>s<% } %></p>
   </div>
   </body>
 </html>

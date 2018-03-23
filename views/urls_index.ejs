@@ -8,11 +8,14 @@
     <% include partials/_header %>
     <div class="main">
       <% if(user) { %>
-      <h2>Here's everything in the database</h2>
+      <h2>Here's all your URLs</h2>
       <ul class="url-list">
         <% for(url in urls){ %>
           <li>
-            <%= url %> -> <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a> (<%= urls[url].date %>) - Visited <%= urls[url].redirects %> times
+            <%= url %> -> <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
+            (<% if(urls[url].updated){ %>Updated
+              <% } else { %>Created
+                <% } %> <% let dateString = dateFormat(urls[url].date, "mmm dd yyyy HH:MM"); %><%= dateString %>) - <%= urls[url].redirects %> visit<% if(urls[url].redirects === 1){ %><% } else { %>s<% } %>
             <form method="GET" action="/urls/<%= url %>">
               <button  type="submit">Edit</button>
             </form>
