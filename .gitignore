@@ -1,6 +1,7 @@
 testing checklist.numbers
 testbcrypt.js
 testzeros.js
+.DS_store
 
 # Logs
 logs

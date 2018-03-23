@@ -8,7 +8,7 @@
     <% include partials/_header %>
     <div class="main">
     <h1><a href="/u/<%= shortURL %>">/u/<%= shortURL %></a> redirects to:</h1>
-    <form action="/urls/<%= shortURL %>" method="POST" style="margin:150px;">
+    <form action="/urls/<%= shortURL %>" method="POST" style="margin:50px;">
       <label for="longURL">URL:</label>
       <input id="longURL" type="text" name="longURL" value="<%= url.longURL %>" style="width: 300px">
       <input type="submit" value="Update">

@@ -4,7 +4,8 @@ TinyApp is a full stack web application built with Nodejs and Express. It allows
 
 ## Features
 
-- Redirection from `/u/[xxxxxx]` is publicly accessible
+- Redirection from `/u/[abc123]` is publicly accessible
+- Redirection urls will avoid use of I/l/1/0/O characters to avoid possible confusion.
 - Users must log in to create new urls
 - Urls are owned by the creating user and only the owner can edit a url
 - Checks protocol on new or updated URLs, adds http:// if no protocol included.
@@ -13,7 +14,11 @@ TinyApp is a full stack web application built with Nodejs and Express. It allows
 
 ## Final Product
 
-!["Screenshot"](#)
+!["List of User's URLs"](https://github.com/thelornenelson/tiny-app/blob/master/docs/url-listing)
+!["URL Editing"](https://github.com/thelornenelson/tiny-app/blob/master/docs/url-edit)
+!["Example Error - trying to view details page for invalid URL"](https://github.com/thelornenelson/tiny-app/blob/master/docs/example-error)
+
+
 
 ## Dependencies
 
