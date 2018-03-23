@@ -1,10 +1,10 @@
 <div class="header">
-  <span class="header-title header-color header-shadow">TinyApp</span>
+  <a class="not-link" href="/urls"><span class="header-title header-color header-shadow">TinyApp</span></a>
   <span class="header-subtext header-color header-shadow">a simple url shortener</span>
   <div class="nav-bar header-color">
     <a class="header header-shadow" href="/urls/new" >New Link</a> |
     <a class="header header-shadow" href="/urls" >My Links</a> <% if(user){ %>
-        | Welcome Back, <%= user.email %> 
+        | Welcome Back, <%= user.email %>
         <form method="POST" action="/logout" >
         <input type="submit" value="Log out">
       </form>
