@@ -8,43 +8,41 @@
     <% include partials/_header %>
     <div class="main">
       <% if(user) { %>
-      <h2>Here's all your URLs</h2>
-      <table class="url-list">
-        <% for(url in urls){ %>
-            <tr>
-            <td class="left">
-              <a href="/u/<%= url %>">/u/<%= url %></a>
-            </td>
-            <td class="left">
-               ->
-            </td>
-            <td class="left">
-              <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
-            </td>
-            <td class="small">
-              (<% if(urls[url].updated){ %>Updated
-                <% } else { %>Created
-                <% } %> <% let dateString = dateFormat(urls[url].date, "mmm dd yyyy HH:MM"); %><%= dateString %>)
-            </td>
-            <td class="small">
-              <%= urls[url].redirects %> visit<% if(urls[url].redirects === 1){ %><% } else { %>s<% } %>
-            </td>
-            <td>
-              <form method="GET" action="/urls/<%= url %>">
-                <button  type="submit">Edit</button>
-              </form>
-              <form method="POST" action="/urls/<%= url %>/delete">
-                <button  type="submit">Delete</button>
-              </form>
-            </td>
-          </tr>
-        <% } %>
-      </table>
-      <p>
-        <a href="/urls/new">Add a Link</a>
-      </p>
+        <h2>Here's all your URLs</h2>
+        <table class="url-list">
+          <% for(url in urls){ %>
+              <tr>
+              <td class="left">
+                <a href="/u/<%= url %>">/u/<%= url %></a>
+              </td>
+              <td class="left">-></td>
+              <td class="left">
+                <a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a>
+              </td>
+              <td class="small">
+                (<% if(urls[url].updated){ %>Updated
+                  <% } else { %>Created
+                  <% } %> <% let dateString = dateFormat(urls[url].date, "mmm dd yyyy HH:MM"); %><%= dateString %>)
+              </td>
+              <td class="small">
+                <%= urls[url].redirects %> visit<% if(urls[url].redirects === 1){ %><% } else { %>s<% } %>
+              </td>
+              <td>
+                <form method="GET" action="/urls/<%= url %>">
+                  <button  type="submit">Edit</button>
+                </form>
+                <form method="POST" action="/urls/<%= url %>/delete">
+                  <button  type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% } %>
+        </table>
+        <p>
+          <a href="/urls/new">Add a Link</a>
+        </p>
       <% } else { %>
-      <p><a href="/login">Login</a> to view your urls</p>
+        <p><a href="/login">Login</a> to view your urls</p>
       <% } %>
     </div>
 </body>

@@ -1,6 +1,7 @@
 let express = require("express");
 let app = express();
 let PORT = process.env.PORT || 8080; // default port 8080
+
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
@@ -9,6 +10,9 @@ const dateFormat = require('dateFormat');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({ name: "session", secret: "so be sure to add something" }));
 
+app.set("view engine", "ejs");
+
+// sample user database for testing purposes.
 const users = {
   "geg7aa": {
     id: "geg7aa",
@@ -22,6 +26,7 @@ const users = {
   }
 };
 
+// sample URL database
 const urlDatabase = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca", userId: "geg7aa", date:  new Date(2018, 1, 5, 10, 5), redirects: 3, updated: true},
   "9sm5xK": {longURL: "http://www.google.com", userId: "geg7aa", date:  new Date(2018, 2, 5, 18, 4), redirects: 5, updated: false},
@@ -35,7 +40,6 @@ const urlDatabase = {
   "RZbVdz": {longURL: "http://www.youtube.com", userId: "vbei2j", date:  new Date(1987, 4, 11, 17, 0), redirects: 5, updated: false},
 };
 
-app.set("view engine", "ejs");
 
 // redirect root to /urls, if logged in.
 app.get("/", (req, res) => {
@@ -64,7 +68,6 @@ app.get("/urls/new", (req, res) => {
   if(req.session.userId){
     let templateVars = {
       user: getUserById(req.session.userId),
-      random: generateRandomString()
     };
     res.render("urls_new", templateVars);
   } else {
@@ -75,7 +78,7 @@ app.get("/urls/new", (req, res) => {
 // show details for given short url, and show form to allow updating
 app.get("/urls/:id", (req, res) => {
   if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){
-    //happy path, url exists for current user
+    //happy path, url exists and owned by current user
     let templateVars = {
       user: getUserById(req.session.userId),
       url: urlDatabase[req.params.id],
@@ -85,20 +88,20 @@ app.get("/urls/:id", (req, res) => {
     res.render("urls_show", templateVars);
   } else if(req.session.userId && !urlDatabase[req.params.id]){
     //logged in but URL doesn't exist
-      res.status(400);
-      res.render("edit_errors", { message: `Url /${req.params.id} doesn't exist.`, user: getUserById(req.session.userId)});
-    } else if(req.session.userId){
-      //logged in
-        res.status(403);
-        res.render("edit_errors", { message: `You're not authorized to change ${req.params.id}`, user: getUserById(req.session.userId)});
-      } else {
-        //not logged in
-        res.status(401);
-        res.render("edit_errors", { message: "Not Logged In.", user: getUserById(req.session.userId)});
-      }
+    res.status(400);
+    res.render("edit_errors", { message: `Url /${req.params.id} doesn't exist.`, user: getUserById(req.session.userId)});
+  } else if(req.session.userId){
+    //logged in
+    res.status(403);
+    res.render("edit_errors", { message: `You're not authorized to change ${req.params.id}`, user: getUserById(req.session.userId)});
+  } else {
+    //not logged in
+    res.status(401);
+    res.render("edit_errors", { message: "Not Logged In.", user: getUserById(req.session.userId)});
+  }
 });
 
-// redirect based on valid short URL, or just redirect to main page otherwise
+// redirect based on valid short URL, or respond with error if url not found
 app.get("/u/:shortURL", (req, res) => {
   if(urlDatabase[req.params.shortURL]){
     urlDatabase[req.params.shortURL].redirects++;
@@ -109,6 +112,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
+// display registration form. Null user/message required to ensure templates are displayed appropriately
 app.get("/register", (req, res) => {
   if(req.session.userId){
     res.redirect("/urls");
@@ -117,6 +121,7 @@ app.get("/register", (req, res) => {
     }
 });
 
+// display login form. Null user/message required to ensure templates are displayed appropriately
 app.get("/login", (req, res) => {
   if(req.session.userId){
     res.redirect("/urls");
@@ -125,6 +130,7 @@ app.get("/login", (req, res) => {
     }
 });
 
+// register new user if valid request, otherwise respond with error message
 app.post("/register", (req, res) =>{
   if(!userExists(req.body.email) && req.body.password && req.body.email){
     let newId = generateRandomString();
@@ -144,12 +150,13 @@ app.post("/register", (req, res) =>{
       }
 });
 
+// remove session cookie and redirect to main page
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
-// login user if email and password match
+// login user if email and password match, otherwise respond with error message
 app.post("/login", (req, res) => {
   let validUser = false;
   for(user in users){
@@ -167,7 +174,7 @@ app.post("/login", (req, res) => {
   }
 });
 
-// create new database record
+// create new database record if user logged in
 app.post("/urls", (req, res) => {
   let newKey = generateRandomString();
   if(getUserById(req.session.userId)){ //confirm session is active and user exists
@@ -176,7 +183,7 @@ app.post("/urls", (req, res) => {
   res.redirect("/urls/" + newKey);
 });
 
-// update existing database record, if it exists.
+// update existing database record, if it exists and user has access.
 app.post("/urls/:id", (req, res) => {
   //check to make sure id exists and belongs to current session user
   if(urlExistsForUser(req.session.userId, urlDatabase, req.params.id)){
@@ -202,7 +209,6 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
@@ -218,6 +224,7 @@ function userURLs(userId, urlDatabase){
   return result;
 }
 
+// generates random 6-character string suitable for new userId or short url.
 function generateRandomString(){
   let length = 6;
   let result = "";
@@ -240,7 +247,7 @@ function userExists(email){
   return false;
 }
 
-// returns true if url found and userId matches
+// returns true if url found and userId matches, otherwise false.
 function urlExistsForUser(userId, urlDatabase, shortURL){
   if(urlDatabase[shortURL] && ( urlDatabase[shortURL].userId === userId )){
     return true;
@@ -248,7 +255,7 @@ function urlExistsForUser(userId, urlDatabase, shortURL){
   return false;
 }
 
-//returns reference to user object if found, otherwise undefined.
+//returns a sanitized user object if userId found, otherwise returns false.
 function getUserById(userId){
   for(user in users){
     if(users[user].id === userId){
@@ -259,9 +266,10 @@ function getUserById(userId){
   return false;
 }
 
+//test to see if url is prefixed with protocol in xyx:// format. If not, assume http://
+//returns url with valid protocol (although correctness is not checked)
 function checkPrefix(url){
   if(!(/^\w+:\/\//.test(url))){
-    //test to see if url is prefixed with protocol in xyx:// format. If not, assume http://
     return "http://" + url;
   } else {
     return url;

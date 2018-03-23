@@ -3,8 +3,9 @@
   <span class="header-subtext header-color header-shadow">a simple url shortener</span>
   <div class="nav-bar header-color">
     <a class="header header-shadow" href="/urls/new" >New Link</a> |
-    <a class="header header-shadow" href="/urls" >My Links</a><% if(user){ %>
-        | <span class="hello" >Welcome Back, <%= user.email %></span>
+    <a class="header header-shadow" href="/urls" >My Links</a>
+    <% if(user){ %>
+        <span class="hello" >Welcome Back, <%= user.email %></span>
         <form method="POST" action="/logout" >
         <input type="submit" value="Log out">
       </form>
